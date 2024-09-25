@@ -17,14 +17,7 @@ pipeline {
             }
         }
         
-        stage('Set up Docker Buildx') {
-            steps {
-                script {
-                    // Ensure Docker Buildx is set up (required for building multi-platform images)
-                    bat 'docker buildx create --use || echo "Buildx already configured"'
-                }
-            }
-        }
+        
         
         stage('Login to Docker Hub') {
             steps {
