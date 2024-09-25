@@ -12,6 +12,7 @@ images:
 
 delete:
 	docker rmi $(IMAGE_NAME):$(TAG)
+	
 
 containers:
 	docker ps
