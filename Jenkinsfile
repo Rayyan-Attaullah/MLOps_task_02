@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     // Ensure Docker Buildx is set up (required for building multi-platform images)
-                    sh 'docker buildx create --use || echo "Buildx already configured"'
+                    bat 'docker buildx create --use || echo "Buildx already configured"'
                 }
             }
         }
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker image and push it to Docker Hub
-                    sh """
+                    bat """
                         docker build -t ${DOCKER_IMAGE_NAME}:latest .
                         docker push ${DOCKER_IMAGE_NAME}:latest
                     """
@@ -50,7 +50,7 @@ pipeline {
         
         stage('Log Docker Images') {
             steps {
-                sh 'docker images'
+                bat 'docker images'
             }
         }
     }
