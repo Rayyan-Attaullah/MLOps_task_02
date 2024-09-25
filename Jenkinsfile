@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // Replace with your Jenkins credential ID for DockerHub
-        DOCKER_IMAGE_NAME = 'rayyanattaullah/mlops_task_02' // Replace with your Docker image name
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') 
+        DOCKER_IMAGE_NAME = 'rayyanatttaullah09/mlops_task_02' 
         GIT_REPO = 'https://github.com/Rayyan-Attaullah/MLOps_task_02.git'
     }
     
