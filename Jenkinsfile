@@ -1,68 +1,71 @@
 pipeline {
     agent any
-
+    
     environment {
-        // Jenkins credentials ID where DockerHub credentials are stored
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // Use Jenkins credentials for Docker Hub login
-        DOCKER_USERNAME = "${DOCKERHUB_CREDENTIALS_USR}"
-        DOCKER_PASSWORD = "${DOCKERHUB_CREDENTIALS_PSW}"
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // Replace with your Jenkins credential ID for DockerHub
+        DOCKER_IMAGE_NAME = 'rayyanattaullah/mlops_task_02' // Replace with your Docker image name
+        GIT_REPO = 'https://github.com/Rayyan-Attaullah/MLOps_task_02.git'
     }
-
+    
     stages {
-        stage('Checkout Code') {
+        stage('Checkout SCM') {
             steps {
-                // Checkout the repository code
-                checkout scm
+                checkout([$class: 'GitSCM', 
+                          branches: [[name: '*/main']],
+                          userRemoteConfigs: [[url: "${GIT_REPO}"]]
+                ])
             }
         }
-
+        
         stage('Set up Docker Buildx') {
             steps {
                 script {
-                    sh '''
-                        # Install Docker Buildx if not already available
-                        docker buildx version || docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                        docker buildx create --use
-                    '''
+                    // Ensure Docker Buildx is set up (required for building multi-platform images)
+                    sh 'docker buildx create --use || echo "Buildx already configured"'
                 }
             }
         }
-
+        
         stage('Login to Docker Hub') {
             steps {
                 script {
-                    // Use the environment variables to log in to Docker Hub
-                    sh '''
-                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                    '''
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        echo 'Logged in to Docker Hub successfully'
+                    }
                 }
             }
         }
-
+        
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    // Build the Docker image and push it to Docker Hub using the Makefile commands
-                    sh 'make docker'
-                    sh 'make push'
+                    // Build Docker image and push it to Docker Hub
+                    sh """
+                        docker build -t ${DOCKER_IMAGE_NAME}:latest .
+                        docker push ${DOCKER_IMAGE_NAME}:latest
+                    """
                 }
             }
         }
-
+        
         stage('Log Docker Images') {
             steps {
-                script {
-                    // Log Docker images for verification
-                    sh 'make images'
-                }
+                sh 'docker images'
             }
         }
     }
-
+    
     post {
         always {
-            // Clean up the workspace after the pipeline execution
-            cleanWs()
+            cleanWs() // Clean up workspace after pipeline completion
+        }
+        
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        
+        failure {
+            echo 'Pipeline failed. Please check logs for more details.'
         }
     }
 }
